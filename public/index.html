@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>private-set-intersection.xyz</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <div class="wrap header-row">
+      <div>
+        <h1>private-set-intersection.xyz</h1>
+        <p class="tagline">Counting shared applicants across summer math programs — without sharing names.</p>
+      </div>
+      <div id="whoami" hidden>
+        <span id="whoami-name"></span>
+        <button id="logout" class="link">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- ================= Auth ================= -->
+    <section id="auth" hidden>
+      <div class="grid2">
+        <div class="card">
+          <h2>Log in</h2>
+          <form id="login-form">
+            <label>Program name <input name="name" required autocomplete="username"></label>
+            <label>Password <input name="password" type="password" required autocomplete="current-password"></label>
+            <button type="submit">Log in</button>
+            <p id="login-error" class="error" hidden></p>
+          </form>
+        </div>
+        <div class="card">
+          <h2>Register your program</h2>
+          <p id="register-closed" class="warn" hidden>Registration is closed.</p>
+          <form id="register-form">
+            <label>Program name <input name="name" required placeholder="e.g. MathILy"></label>
+            <label>Your name / email <span class="muted">(optional, for the organizers)</span>
+              <input name="contact"></label>
+            <label>Choose a password <input name="password" type="password" minlength="8" required autocomplete="new-password"></label>
+            <label>Repeat password <input name="password2" type="password" minlength="8" required autocomplete="new-password"></label>
+            <label id="join-code-row">Join code <span class="muted">(from the organizers)</span>
+              <input name="joinCode" autocomplete="off"></label>
+            <button type="submit">Register</button>
+            <p id="register-error" class="error" hidden></p>
+          </form>
+        </div>
+      </div>
+      <div class="card explainer">
+        <h2>How this works</h2>
+        <ol>
+          <li>Your browser makes a <strong>secret key</strong> that never leaves your computer.</li>
+          <li>You paste your applicant names. Your browser turns each name into a point on an elliptic curve and
+            scrambles it with your key. Only these scrambled values are uploaded.</li>
+          <li>Each program then applies its own key to every other program’s scrambled list. The scrambling
+            commutes, so once every program has touched every list, the same name ends up as the same value no
+            matter who submitted it — but no one, including the server, can turn a value back into a name.</li>
+          <li>The organizers learn only how many scrambled values are shared between programs.</li>
+        </ol>
+        <p class="small muted">This is the standard Diffie–Hellman
+          <a href="https://en.wikipedia.org/wiki/Private_set_intersection">private set intersection</a>
+          protocol, using the ristretto255 group. All cryptography runs in your browser; you can read the code
+          via “view source”.</p>
+      </div>
+    </section>
+
+    <!-- ================= Main ================= -->
+    <section id="main" hidden>
+      <div class="card step" id="step-key">
+        <h2><span class="num">1</span> Your secret key</h2>
+        <div id="key-body"></div>
+        <p id="key-error" class="error" hidden></p>
+      </div>
+
+      <div class="card step" id="step-lists">
+        <h2><span class="num">2</span> Upload your applicant lists</h2>
+        <div id="lists-body"></div>
+      </div>
+
+      <div class="card step" id="step-work">
+        <h2><span class="num">3</span> Apply your key to everyone else’s lists</h2>
+        <p>Each program’s list must be scrambled by every other program. Click start and leave this tab open —
+          it will keep working as other programs upload.</p>
+        <p id="pending-count" class="strong"></p>
+        <div class="row">
+          <button id="auto-toggle">Start processing</button>
+          <span id="auto-status" class="small muted"></span>
+        </div>
+        <p id="work-current" class="small"></p>
+        <progress id="work-progress" max="1" value="0" hidden></progress>
+        <p id="work-error" class="error" hidden></p>
+        <ul id="work-log" class="log small"></ul>
+      </div>
+
+      <div class="card">
+        <h2>Progress board</h2>
+        <div id="board"></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/build/app.js"></script>
+</body>
+</html>

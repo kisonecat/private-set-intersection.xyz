@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PSI Organizers</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <div class="wrap header-row">
+      <div>
+        <h1>private-set-intersection.xyz — Organizers</h1>
+        <p class="tagline">Monitor the run and view results.</p>
+      </div>
+      <button id="logout" class="link" hidden>Log out</button>
+    </div>
+  </header>
+  <main class="wrap">
+    <section id="login" class="card" hidden>
+      <h2>Organizer login</h2>
+      <form id="login-form">
+        <label>Admin password <input name="password" type="password" required></label>
+        <button type="submit">Log in</button>
+        <p id="login-error" class="error" hidden></p>
+      </form>
+    </section>
+
+    <section id="panel" hidden>
+      <div class="card">
+        <h2>Programs</h2>
+        <div class="row">
+          <label style="margin:0"><input type="checkbox" id="reg-lock" style="display:inline;width:auto"> Registration closed</label>
+        </div>
+        <div id="programs"></div>
+      </div>
+
+      <div class="card">
+        <h2>Lists</h2>
+        <div id="lists"></div>
+        <div class="row">
+          <button id="clear-lists" class="danger small">Clear all lists (restart the run)</button>
+          <span class="small muted">Keeps programs and their keys; everyone re-uploads.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Results</h2>
+        <div id="results"></div>
+      </div>
+      <p id="panel-error" class="error" hidden></p>
+    </section>
+  </main>
+  <script type="module" src="/build/admin.js"></script>
+</body>
+</html>
