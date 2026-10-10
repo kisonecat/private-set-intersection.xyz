@@ -3,6 +3,7 @@ import { openDatabase } from './db.js';
 import { createApp } from './app.js';
 
 const port = Number(process.env.PORT || 3000);
+const host = process.env.HOST || undefined; // e.g. 127.0.0.1 behind a reverse proxy
 const dbFile = process.env.DATABASE || 'data/psi.sqlite';
 
 let adminPassword = process.env.ADMIN_PASSWORD;
@@ -22,6 +23,6 @@ const labels = (process.env.LIST_LABELS || 'Completed applications,All applicant
 const db = openDatabase(dbFile);
 const app = createApp(db, { adminPassword, joinCode, labels, trustProxy: process.env.TRUST_PROXY });
 
-app.listen(port, () => {
-  console.log(`PSI server listening on http://localhost:${port}  (database: ${dbFile})`);
+app.listen(port, host, () => {
+  console.log(`PSI server listening on http://${host || 'localhost'}:${port}  (database: ${dbFile})`);
 });
