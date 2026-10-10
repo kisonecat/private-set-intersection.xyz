@@ -31,8 +31,8 @@ if ! command -v caddy >/dev/null; then
   apt-get install -y caddy
 fi
 
-# Unattended security updates.
-apt-get install -y unattended-upgrades >/dev/null
+# Compiler toolchain for native modules (better-sqlite3), and unattended security updates.
+apt-get install -y build-essential python3 unattended-upgrades >/dev/null
 
 id psi >/dev/null 2>&1 || useradd --system --home /opt/psi --shell /usr/sbin/nologin psi
 install -d -o psi -g psi -m 0755 /opt/psi
