@@ -22,7 +22,7 @@ test('normalization agrees with the scheme from the email thread', () => {
   assert.equal(k('Joe Jameson'), 'JAMESON|JOE');
   assert.equal(k('Lee, Justin'), k('Justin Lee'));
   assert.equal(k('Justin Lee (1 of 2)'), 'JUSTIN|LEE');
-  assert.equal(k('sarah-marie belcastro'), 'BELCASTRO|SARAHMARIE');
+  assert.equal(k('Ann-Marie Dubois'), 'ANNMARIE|DUBOIS');
   assert.equal(k('Matthew A. Husen'), 'HUSEN|MATTHEW');
   assert.equal(k('José  Núñez'), 'JOSE|NUNEZ');
   assert.equal(k("Liam O'Brien Jr."), 'LIAM|OBRIEN');

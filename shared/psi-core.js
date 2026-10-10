@@ -34,7 +34,7 @@ const SUFFIXES = new Set(['JR', 'SR', 'II', 'III', 'IV', 'V', 'JNR', 'SNR']);
 //
 // "Justin Lee (1 of 2)" -> "JUSTIN LEE"... then sorted -> "JUSTIN|LEE"
 // "Lee, Justin"         -> "JUSTIN|LEE"   (word order doesn't matter)
-// "sarah-marie belcastro" -> "BELCASTRO|SARAHMARIE"
+// "Ann-Marie Dubois"    -> "ANNMARIE|DUBOIS"
 // "Matthew A. Husen"    -> "HUSEN|MATTHEW" (middle names/initials dropped)
 export function normalizeName(line) {
   const warnings = [];

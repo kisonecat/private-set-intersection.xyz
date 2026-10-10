@@ -18,7 +18,7 @@ the ristretto255 elliptic-curve group (via [`@noble/curves`](https://github.com/
    fingerprint `k·G` goes to the server, so the page can detect when someone loads the wrong key file.
 2. **Normalize.** Pasted names are normalized in the browser. The rules:
    - Drop parentheticals ("Justin Lee (1 of 2)") and quoted nicknames.
-   - Strip accents and punctuation, so "sarah-marie" becomes `SARAHMARIE`.
+   - Strip accents and punctuation, so "Ann-Marie" becomes `ANNMARIE`.
    - Keep the first and last words, dropping middle names/initials and Jr/III.
    - Sort those two words alphabetically. "Jim Jordan" becomes `JIM|JORDAN`, and "Lee, Justin" becomes the same key as "Justin Lee".
 
