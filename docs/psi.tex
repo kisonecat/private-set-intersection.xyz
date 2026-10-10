@@ -15,6 +15,12 @@
 \usetikzlibrary{arrows.meta,positioning}
 \usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black,citecolor=blue!50!black]{hyperref}
 
+% Let large screenshots share a page with text instead of getting float pages.
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.8}
+
 \newtheorem*{fact}{Fact}
 
 \newcommand{\G}{\mathbb{G}}
@@ -45,7 +51,7 @@
 \tableofcontents
 
 %======================================================================
-\section{The question}
+\section{The question}\label{sec:question}
 %======================================================================
 
 Each participating program $X$ has a list $A_X$ of applicants. We would like to learn things like:
@@ -76,8 +82,136 @@ What we need is a scrambling function that
 \end{enumerate}
 \emph{Commutative} encryption provides exactly this.
 
+Section~\ref{sec:website} explains how to use the website, step by step.
+Sections~\ref{sec:protocol}--\ref{sec:people} describe the underlying mathematics and
+cryptographic mechanisms.
+
 %======================================================================
-\section{The protocol}
+\section{Using the website}\label{sec:website}
+%======================================================================
+
+All of the cryptography runs in the participant's browser, in a background thread (Web Worker).
+The browser code is not minified, so anyone can read it with ``view source''. The server
+(Node.js, Express, SQLite) stores only encrypted lists, counts, and a public key fingerprint per
+program.
+
+\subsection{Before the session}
+
+Each program should prepare a plain-text list of applicant \textbf{legal names}, one per line,
+first and last name in either order. Programs should leave duplicate names in, because the page
+counts them, and need not clean up markers like ``(1 of 2)''. Optionally, programs can prepare two
+lists, one of completed applications and one of all applicants. These are analyzed separately.
+
+\subsection{Step 0: register}
+
+One person per program registers with the program's name, a password, and the join code from the
+organizers (Figure~\ref{fig:register}).
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.8\linewidth]{figures/register.jpg}
+  \caption{Logging in or registering a program.}
+  \label{fig:register}
+\end{figure}
+
+\subsection{Step 1: generate a key}
+
+The page generates the program's secret key, keeps it in the browser, and downloads a backup
+copy (\texttt{psi-key-\emph{program}.json}). Keep this file until the exercise is over. If you
+switch computers or browsers, load the backup and the page will verify that it matches. Do not send
+the key to anyone, including the organizers.
+
+\subsection{Step 2: paste and upload}
+
+Paste the list. The page immediately shows how many distinct keys the list contains, how each name
+is normalized (see Section~\ref{sec:normalize} for the rules), and which rows look suspicious, such
+as email addresses, digits, or single words (Figure~\ref{fig:paste}). Fix anything that is wrong, then click \emph{Encrypt and upload}. The
+names never leave the computer; only the encrypted points are uploaded.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.8\linewidth]{figures/paste.jpg}
+  \caption{Pasting a list. The two flagged rows are an email address and a single name, both
+  probably mistakes.}
+  \label{fig:paste}
+\end{figure}
+
+\subsection{Step 3: start processing, then wait}
+
+Every program's list has to be encrypted by every other program's key. This step does that, but
+\textbf{the only thing a person does is click \emph{Start processing} once.} After that, the page
+does all the work by itself. Nobody needs to watch it, type anything, or approve anything.
+
+What happens behind the scenes:
+\begin{itemize}
+  \item Every few seconds, the browser asks the server: ``Is there a list that still needs my
+        program's key?'' The browser does the asking; the server never contacts the browser or
+        the person.
+  \item If the answer is yes, the browser downloads that list. It applies the secret key from
+        Step~1, shuffles the result, and uploads it. Then it asks again.
+  \item If the answer is no, the browser waits a few seconds and asks again. This way it
+        automatically picks up lists that other programs upload later.
+\end{itemize}
+
+The computing itself is quick, roughly a second or two per list of a couple of thousand names. Most
+of Step~3 is waiting for the other programs to upload their lists and for their browsers to apply
+their keys to yours.
+
+What participants need to do during Step~3:
+\begin{itemize}
+  \item \textbf{Keep the tab open, and keep the laptop awake and online} until the progress board
+        shows every list as finished (every row reads $n/n$, where $n$ is the number of programs).
+        A program that finishes early still has to stay connected, because a list uploaded later by
+        another program cannot be finished without this program's key.
+  \item If the tab gets closed or the laptop goes to sleep, nothing is lost. Reopen the site, log in,
+        and click \emph{Start processing} again. The key is still stored in the browser, or it can
+        be reloaded from the backup file.
+\end{itemize}
+
+There are no fixed rounds and no particular order: lists go to whichever programs are ready. If two
+programs' browsers grab the same list at the same moment, the server accepts only one result. The
+other browser moves on automatically and retries later. The progress board
+(Figure~\ref{fig:progress}) shows which programs have processed which lists. That makes it easy to
+spot a program whose laptop has gone to sleep.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.8\linewidth]{figures/progress.jpg}
+  \caption{Partway through: MathILy has applied its key to every list, but the other programs have
+  not yet processed MathILy's list or one another's.}
+  \label{fig:progress}
+\end{figure}
+
+\subsection{Results}
+
+When every list has been processed by every program, the organizer page shows the results
+(Figures~\ref{fig:results} and~\ref{fig:histogram}). These include:
+\begin{itemize}[nosep]
+  \item the union size and the estimated number of distinct people (Section~\ref{sec:people});
+  \item for each program, how many applicants appear on no other list;
+  \item the pairwise overlap matrix;
+  \item the distribution of the number of programs per applicant;
+  \item counts for every exact combination of programs.
+\end{itemize}
+The organizers can also download a de-identified CSV with one row per encrypted name and one 0/1
+column per program, for further analysis.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.8\linewidth]{figures/results.jpg}
+  \caption{Organizer view of the results, using synthetic data for five programs.}
+  \label{fig:results}
+\end{figure}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.8\linewidth]{figures/histogram.jpg}
+  \caption{How many programs each (encrypted) name applied to, and the exact combinations.}
+  \label{fig:histogram}
+\end{figure}
+
+%======================================================================
+\section{The protocol}\label{sec:protocol}
 %======================================================================
 
 \subsection{Ingredients}
@@ -163,7 +297,7 @@ encrypted value twice, a program with two applicants of the same name would reco
 the final data.
 
 %======================================================================
-\section{What each party learns}
+\section{What each party learns}\label{sec:learns}
 %======================================================================
 
 The security of the scheme rests on the Decisional Diffie--Hellman assumption in $\G$: given
@@ -207,7 +341,7 @@ random group elements.
 \end{itemize}
 
 %======================================================================
-\section{Normalizing names}
+\section{Normalizing names}\label{sec:normalize}
 %======================================================================
 
 The protocol compares strings exactly, so the same student must produce the same string at every
@@ -249,7 +383,7 @@ Smith'' versus ``Matthew Smith''). We ask programs to paste legal names, which r
 second problem, and we \emph{measure} the first problem, as described next.
 
 %======================================================================
-\section{From distinct names to distinct people}
+\section{From distinct names to distinct people}\label{sec:people}
 %======================================================================
 
 Each program's own list is already a list of distinct \emph{people}. So when the browser normalizes
@@ -287,102 +421,7 @@ The same reasoning, applied with higher moments $C_r = \sum_j p_j^r$, could refi
 and produce corrections for the pairwise counts. We have not needed this.
 
 %======================================================================
-\section{Using the website}
-%======================================================================
-
-All of the cryptography runs in the participant's browser, in a background thread (Web Worker).
-The browser code is not minified, so anyone can read it with ``view source''. The server
-(Node.js, Express, SQLite) stores only encrypted lists, counts, and a public key fingerprint per
-program.
-
-\subsection{Before the session}
-
-Each program should prepare a plain-text list of applicant \textbf{legal names}, one per line,
-first and last name in either order. Programs should leave duplicate names in, because the page
-counts them, and need not clean up markers like ``(1 of 2)''. Optionally, programs can prepare two
-lists, one of completed applications and one of all applicants. These are analyzed separately.
-
-\subsection{Step 0: register}
-
-One person per program registers with the program's name, a password, and the join code from the
-organizers (Figure~\ref{fig:register}).
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.8\linewidth]{figures/register.jpg}
-  \caption{Logging in or registering a program.}
-  \label{fig:register}
-\end{figure}
-
-\subsection{Step 1: generate a key}
-
-The page generates the program's secret key, keeps it in the browser, and downloads a backup
-copy (\texttt{psi-key-\emph{program}.json}). Keep this file until the exercise is over. If you
-switch computers or browsers, load the backup and the page will verify that it matches. Do not send
-the key to anyone, including the organizers.
-
-\subsection{Step 2: paste and upload}
-
-Paste the list. The page immediately shows how many distinct keys the list contains, how each name
-is normalized, and which rows look suspicious, such as email addresses, digits, or single words
-(Figure~\ref{fig:paste}). Fix anything that is wrong, then click \emph{Encrypt and upload}. The
-names never leave the computer; only the encrypted points are uploaded.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.8\linewidth]{figures/paste.jpg}
-  \caption{Pasting a list. The two flagged rows are an email address and a single name, both
-  probably mistakes.}
-  \label{fig:paste}
-\end{figure}
-
-\subsection{Step 3: process everyone else's lists}
-
-Click \emph{Start processing} and leave the tab open. The page repeatedly asks the server for a
-list that still needs this program's key, applies the key, and uploads the result. There are no
-fixed rounds: lists flow to whichever programs are ready. If two programs grab the same list at the
-same moment, the server accepts only one result, and the other program simply moves on and retries
-later. The progress board (Figure~\ref{fig:progress}) shows which program has processed which list,
-so it is easy to see who is still working.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.8\linewidth]{figures/progress.jpg}
-  \caption{Partway through: MathILy has applied its key to every list, but the other programs have
-  not yet processed MathILy's list or one another's.}
-  \label{fig:progress}
-\end{figure}
-
-\subsection{Results}
-
-When every list has been processed by every program, the organizer page shows the results
-(Figures~\ref{fig:results} and~\ref{fig:histogram}). These include:
-\begin{itemize}[nosep]
-  \item the union size and the estimated number of distinct people;
-  \item for each program, how many applicants appear on no other list;
-  \item the pairwise overlap matrix;
-  \item the distribution of the number of programs per applicant;
-  \item counts for every exact combination of programs.
-\end{itemize}
-The organizers can also download a de-identified CSV with one row per encrypted name and one 0/1
-column per program, for further analysis.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.8\linewidth]{figures/results.jpg}
-  \caption{Organizer view of the results, using synthetic data for five programs.}
-  \label{fig:results}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.8\linewidth]{figures/histogram.jpg}
-  \caption{How many programs each (encrypted) name applied to, and the exact combinations.}
-  \label{fig:histogram}
-\end{figure}
-
-%======================================================================
-\section{Provenance}
+\section{Provenance}\label{sec:provenance}
 %======================================================================
 
 We did not invent this cryptography. Commutative-encryption set intersection goes back to
