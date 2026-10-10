@@ -76,7 +76,13 @@ PrivateTmp=true
 WantedBy=multi-user.target
 EOF
 
+# Pin the ACME issuer to Let's Encrypt: Ubuntu's Caddy 2.6 falls back to ZeroSSL,
+# which no longer accepts that version's account registration.
 cat > /etc/caddy/Caddyfile <<EOF
+{
+	acme_ca https://acme-v02.api.letsencrypt.org/directory
+}
+
 ${DOMAIN} {
 	encode gzip
 	reverse_proxy 127.0.0.1:3000
