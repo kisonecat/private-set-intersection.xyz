@@ -2,6 +2,9 @@
 
 Counting overlap between summer math programs’ applicant pools — without sharing names.
 
+📄 **Documentation (PDF):** https://kisonecat.github.io/private-set-intersection.xyz/private-set-intersection.pdf
+(source in [`docs/psi.tex`](docs/psi.tex), rebuilt by GitHub Actions on every push).
+
 This site lets Consortium programs measure how much their applicant pools overlap without anyone
 sharing a list of names: not with each other, and not with the server.
 

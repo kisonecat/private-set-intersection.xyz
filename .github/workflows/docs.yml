@@ -1,0 +1,64 @@
+name: Documentation PDF
+
+# Compile docs/psi.tex and publish the PDF to GitHub Pages at
+# https://kisonecat.github.io/private-set-intersection.xyz/private-set-intersection.pdf
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile LaTeX
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: psi.tex
+          working_directory: docs
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          cp docs/psi.pdf _site/private-set-intersection.pdf
+          cat > _site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <title>private-set-intersection.xyz documentation</title>
+            <meta http-equiv="refresh" content="0; url=private-set-intersection.pdf">
+          </head>
+          <body>
+            <p><a href="private-set-intersection.pdf">Counting Shared Applicants Without Sharing Names (PDF)</a></p>
+          </body>
+          </html>
+          HTML
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
