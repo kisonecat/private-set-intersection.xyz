@@ -24,12 +24,9 @@ if ! command -v node >/dev/null || ! node --version | grep -q "^v${NODE_MAJOR}\.
   apt-get install -y nodejs
 fi
 
+# Caddy from the Ubuntu archive (the upstream Cloudsmith repo now requires payment).
+rm -f /etc/apt/sources.list.d/caddy-stable.list
 if ! command -v caddy >/dev/null; then
-  apt-get install -y debian-keyring debian-archive-keyring apt-transport-https curl gnupg
-  curl -1sLf https://dl.cloudsmith.io/public/caddy/stable/gpg.key \
-    | gpg --dearmor --yes -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-  curl -1sLf https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt \
-    > /etc/apt/sources.list.d/caddy-stable.list
   apt-get update -y
   apt-get install -y caddy
 fi
