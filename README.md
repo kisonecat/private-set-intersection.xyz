@@ -79,6 +79,30 @@ npm test
 Serve it over HTTPS in production. Browsers need a secure context for `crypto.getRandomValues`
 on non-localhost origins, and cookies should be marked `secure`.
 
+## Production deployment
+
+Production runs on an AWS EC2 `t4g.micro` (Ubuntu 24.04, us-east-2) at Elastic IP `18.190.63.214`.
+Caddy terminates HTTPS for `private-set-intersection.xyz`, and Node listens on `127.0.0.1:3000` under systemd (`psi.service`).
+
+```sh
+deploy/deploy.sh      # ships the committed HEAD; provisioning is idempotent
+```
+
+`deploy/deploy.sh` does the following:
+
+1. Runs `deploy/provision.sh` on the server. This installs Node 24, Caddy, and build tools, and creates `/etc/psi.env`, the systemd unit, and the Caddyfile.
+2. Uploads `git archive HEAD` to `/opt/psi/releases/<timestamp>-<rev>`.
+3. Runs `npm ci` and the build.
+4. Repoints `/opt/psi/current`, restarts the service, and runs a health check.
+
+It keeps the last five releases. The SQLite database lives in `/var/lib/psi/`.
+
+Secrets (`ADMIN_PASSWORD`, `JOIN_CODE`) are generated on the server on first provision and are not in the repo:
+
+```sh
+ssh -i ~/.ssh/private-set-intersection.xyz.pem ubuntu@18.190.63.214 sudo cat /etc/psi.env
+```
+
 ## Organizer page (`/admin`)
 
 From the organizer page you can:
