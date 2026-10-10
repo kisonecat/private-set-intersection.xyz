@@ -23,6 +23,12 @@
   <main class="wrap">
     <!-- ================= Auth ================= -->
     <section id="auth" hidden>
+      <div class="callout">
+        <strong>Plan to keep this page open for the whole session.</strong>
+        After you upload your list, your browser must stay open on this site, connected and awake, until
+        every program has finished. Each program’s browser does its share of the work for everyone else’s
+        lists, so closing the tab, letting the laptop sleep, or logging out stalls the whole group.
+      </div>
       <div class="grid2">
         <div class="card">
           <h2>Log in</h2>
@@ -58,6 +64,8 @@
           <li>Each program then applies its own key to every other program’s scrambled list. The scrambling
             commutes, so once every program has touched every list, the same name ends up as the same value no
             matter who submitted it — but no one, including the server, can turn a value back into a name.</li>
+          <li>This happens automatically in your browser, so <strong>keep the tab open</strong> until the
+            progress board shows every list complete.</li>
           <li>The organizers learn only how many scrambled values are shared between programs.</li>
         </ol>
         <p class="small muted">This is the standard Diffie–Hellman
@@ -87,8 +95,12 @@
 
       <div class="card step" id="step-work">
         <h2><span class="num">3</span> Apply your key to everyone else’s lists</h2>
-        <p>Each program’s list must be scrambled by every other program. Click start and leave this tab open —
-          it will keep working as other programs upload.</p>
+        <p>Each program’s list must be scrambled by every other program. Click start, and this page will keep
+          working as other programs upload.</p>
+        <div class="callout">
+          <strong>Leave this browser tab open until the progress board shows every list complete.</strong>
+          Don’t close the tab, log out, or let your laptop sleep. Other programs are waiting on your key.
+        </div>
         <p id="pending-count" class="strong"></p>
         <div class="row">
           <button id="auto-toggle">Start processing</button>
